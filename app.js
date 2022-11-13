@@ -15,27 +15,35 @@ document.addEventListener('DOMContentLoaded', () => {
             source.connect(analyser);     
                     
             analyser.fftSize = 256;
-            const bufferLength = analyser.frequencyBinCount;
-            console.log('bufferLength: ' + bufferLength);
-            const dataArray = new Uint8Array(bufferLength);
+            const analyserBufferLength = analyser.frequencyBinCount;
+            //console.log('bufferLength: ' + bufferLength);
+            const dataArray = new Uint8Array(analyserBufferLength);
         
-            analyser.getByteFrequencyData(dataArray);
-            console.log(dataArray);
+            const buffer = new Array();
+            for (let n = 0 ; n < 128 ; n++) {
+                let element = new Uint8Array(analyserBufferLength);
+                buffer.push(element);
+            }
+            console.log( { buffer });
 
             window.addEventListener('resize', () => {
                 maximiseCanvas(context.canvas);
-                draw(canvas, context, audioCtx, analyser, dataArray, bufferLength, stream);
+                draw(canvas, context, audioCtx, analyser, buffer, analyserBufferLength, stream);
             });
         
-            draw(canvas, context, audioCtx, analyser, dataArray, bufferLength, stream);
+            draw(canvas, context, audioCtx, analyser, buffer, analyserBufferLength, stream);
         })
         .catch((err) => {
             console.error(err);
         });
 });
 
-function draw(canvas, context, audioCtx, analyser, dataArray, bufferLength, stream) {
+function draw(canvas, context, audioCtx, analyser, buffer, analyserBufferLength, stream) {
+
+    const dataArray = buffer.shift();
+    console.log({ buffer, dataArray });
     analyser.getByteFrequencyData(dataArray);
+    buffer.push(dataArray);
 
     const WIDTH = canvas.width;
     const HEIGHT = canvas.height;
@@ -44,14 +52,15 @@ function draw(canvas, context, audioCtx, analyser, dataArray, bufferLength, stre
     context.fillStyle = "rgb(0, 0, 0)";
     context.fillRect(0, 0, WIDTH, HEIGHT);
 
-    drawLine(context, dataArray, WIDTH, HEIGHT);
+    for (let i = buffer.length - 1 ; i >= 0 ; i--)
+        drawLine(context, buffer[i], WIDTH, HEIGHT - (i*4));
 
     let maxValue = dataArray.reduce( (prev, curr) => Math.max(prev, curr), 0);
     context.fillStyle = '#A00';
     context.fillText(maxValue, 5, 20);
 
     //console.log({bufferLength, barWidth, dataArray });
-    window.requestAnimationFrame(() => draw(canvas, context, audioCtx, analyser, dataArray, bufferLength, stream));
+    window.requestAnimationFrame(() => draw(canvas, context, audioCtx, analyser, buffer, analyserBufferLength, stream));
 }
 
 function drawLine(context, dataArray, width, height) {
