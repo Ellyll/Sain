@@ -49,20 +49,32 @@ function draw(canvas, context, audioCtx, analyser, dataArray, bufferLength, stre
     let x = 0;
   
     let wasData = false;
+    context.beginPath();
+    context.strokeStyle = '#55C';
+    //context.moveTo(0, HEIGHT);
     for (let i = 0; i < bufferLength; i++) {
       barHeight = dataArray[i];
       if (barHeight != 0)
         wasData = true;
   
-      context.fillStyle = `rgb(${barHeight + 100}, 50, 50)`;
-      context.fillRect(x, HEIGHT - barHeight / 2, barWidth, barHeight / 2);
+    //   context.fillStyle = `rgb(${barHeight + 100}, 50, 50)`;
+    //   context.fillRect(x, HEIGHT - barHeight / 2, barWidth, barHeight / 2);
+        if (i === 0)
+            context.moveTo(0, HEIGHT - barHeight / 2);
+        else
+            context.lineTo(x, HEIGHT - barHeight / 2);
   
       x += barWidth + 1;
     }
-    if (!wasData) {
-        context.fillStyle = '#A00';
-        context.fillText('No data', 5, 20);
-    }
+    context.lineTo(WIDTH, HEIGHT);
+    context.stroke();
+    // if (!wasData) {
+    //     context.fillStyle = '#A00';
+    //     context.fillText('No data', 5, 20);
+    // }
+    let maxValue = dataArray.reduce( (prev, curr) => Math.max(prev, curr), 0);
+    context.fillStyle = '#A00';
+    context.fillText(maxValue, 5, 20);
 
     //console.log({bufferLength, barWidth, dataArray });
     window.requestAnimationFrame(() => draw(canvas, context, audioCtx, analyser, dataArray, bufferLength, stream));
