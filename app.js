@@ -44,40 +44,37 @@ function draw(canvas, context, audioCtx, analyser, dataArray, bufferLength, stre
     context.fillStyle = "rgb(0, 0, 0)";
     context.fillRect(0, 0, WIDTH, HEIGHT);
 
-    const barWidth = (WIDTH / bufferLength) * 2.5;
-    let barHeight;
-    let x = 0;
-  
-    let wasData = false;
-    context.beginPath();
-    context.strokeStyle = '#55C';
-    //context.moveTo(0, HEIGHT);
-    for (let i = 0; i < bufferLength; i++) {
-      barHeight = dataArray[i];
-      if (barHeight != 0)
-        wasData = true;
-  
-    //   context.fillStyle = `rgb(${barHeight + 100}, 50, 50)`;
-    //   context.fillRect(x, HEIGHT - barHeight / 2, barWidth, barHeight / 2);
-        if (i === 0)
-            context.moveTo(0, HEIGHT - barHeight / 2);
-        else
-            context.lineTo(x, HEIGHT - barHeight / 2);
-  
-      x += barWidth + 1;
-    }
-    context.lineTo(WIDTH, HEIGHT);
-    context.stroke();
-    // if (!wasData) {
-    //     context.fillStyle = '#A00';
-    //     context.fillText('No data', 5, 20);
-    // }
+    drawLine(context, dataArray, WIDTH, HEIGHT);
+
     let maxValue = dataArray.reduce( (prev, curr) => Math.max(prev, curr), 0);
     context.fillStyle = '#A00';
     context.fillText(maxValue, 5, 20);
 
     //console.log({bufferLength, barWidth, dataArray });
     window.requestAnimationFrame(() => draw(canvas, context, audioCtx, analyser, dataArray, bufferLength, stream));
+}
+
+function drawLine(context, dataArray, width, height) {
+
+    const barWidth = (width / dataArray.length) * 2.5;
+    let barHeight;
+    let x = 0;
+  
+    context.beginPath();
+
+    context.strokeStyle = '#55C';
+
+    for (let i = 0; i < dataArray.length; i++) {
+        barHeight = dataArray[i];
+        if (i === 0)
+            context.moveTo(0, height - barHeight / 2);
+        else
+            context.lineTo(x, height - barHeight / 2);
+  
+        x += barWidth + 1;
+    }
+    context.lineTo(width, height);
+    context.stroke();
 }
 
 function maximiseCanvas(canvas) {
